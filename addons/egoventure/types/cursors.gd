@@ -1,5 +1,7 @@
-tool
+@tool
 # Mouse cursor handling for MDNA games
+
+class_name CursorType
 extends Node
 
 
@@ -10,7 +12,7 @@ signal cursors_configured
 enum Type {
 	DEFAULT,
 	GO_FORWARD,
-	GO_BACKWARDS
+	GO_BACKWARDS,
 	TURN_RIGHT,
 	TURN_LEFT,
 	UP,
@@ -76,7 +78,7 @@ func configure(configuration: GameConfiguration):
 # - target_position: Warp the mouse cursor to this point
 func override(
 	type, 
-	texture: Texture, 
+	texture: Texture2D, 
 	hotspot: Vector2,
 	target_position = null
 ):

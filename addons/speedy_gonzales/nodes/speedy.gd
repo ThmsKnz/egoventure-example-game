@@ -15,7 +15,7 @@ var current_hotspot: Vector2
 var current_shape
 
 # Wether the mouse cursor is hidden currently
-var hidden: bool setget _set_hidden
+var hidden: bool: set = _set_hidden
 
 # Keep the current cursor shape and don't update it
 var keep_shape: bool = false
@@ -33,7 +33,7 @@ func _init():
 	# Workaround for faulty feature detection described in
 	# https://github.com/godotengine/godot/issues/49113
 	is_touch = OS.get_name() == "Android" || OS.get_name() == "iOS"
-	if not Engine.editor_hint and not is_touch:
+	if not Engine.is_editor_hint() and not is_touch:
 		Input.set_mouse_mode(
 			Input.MOUSE_MODE_HIDDEN
 		)
@@ -70,7 +70,7 @@ func _input(event):
 # - hotspot: The hotspot position of the cursor
 # - target_position: Warp the mouse cursor to this point
 func set_custom_mouse_cursor(
-	image: Texture, 
+	image: Texture2D, 
 	shape = Input.CURSOR_ARROW, 
 	hotspot: Vector2 = Vector2(0,0),
 	target_position = null

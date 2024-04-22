@@ -1,5 +1,5 @@
+@tool
 # The configuration of an MDNA game base don MDNA core
-tool
 class_name GameConfiguration
 extends Resource
 
@@ -8,13 +8,13 @@ extends Resource
 var design_theme: Theme
 
 # The game's logo
-var design_logo: Texture
+var design_logo: Texture2D
 
 # Cursors
 var design_cursors: Array
 
 # The menu background texture
-var menu_background: Texture
+var menu_background: Texture2D
 
 # The music playing when the menu is opened
 var menu_music: AudioStream
@@ -32,13 +32,13 @@ var menu_button_effect_click: AudioStream
 var menu_item_separation: int = 30
 
 # The background texture for the save slots
-var menu_saveslots_background: Texture
+var menu_saveslots_background: Texture2D
 
 # The image for the "Previous page" button
-var menu_saveslots_previous_image: Texture
+var menu_saveslots_previous_image: Texture2D
 
 # The image for the "Next page" button
-var menu_saveslots_next_image: Texture
+var menu_saveslots_next_image: Texture2D
 
 # The color used for empty save slots
 var menu_saveslots_empty_color: Color = Color(0, 0, 0, 0.55)
@@ -46,8 +46,11 @@ var menu_saveslots_empty_color: Color = Color(0, 0, 0, 0.55)
 # The text shown under the free save slot
 var menu_saveslots_free_text: String = "SAVESLOTS_FREE"
 
+# Orientation of save slot page indicator
+var menu_saveslots_page_label_alignment: int = 0
+
 # The background of the options menu
-var menu_options_background: Texture
+var menu_options_background: Texture2D
 
 # The sample to play when the speech slider is changed
 var menu_options_speech_sample: AudioStream
@@ -73,29 +76,44 @@ var menu_overwrite_confirmation: String = "DIALOG_OVERWRITE"
 # The confirmation text for the restart confirmation prompt
 var menu_restart_confirmation: String = "DIALOG_RESTART"
 
+# Notification message when game has been loaded
+var menu_message_load: String = ""
+
+# Notification message when game has been saved
+var menu_message_save: String = "MESSAGE_SAVE"
+
+# Horizontal alignment of message
+var menu_message_align_horizontal: int = 1
+
+# Vertical alignment of message
+var menu_message_align_vertical: int = 2
+
+# Duration of message display in seconds
+var menu_message_duration_seconds: float = 1.0
+
 # The vertical size of the inventory bar
 var inventory_size: int = 92
 
 # The texture for the menu button (on touch devices)
-var inventory_texture_menu: Texture
+var inventory_texture_menu: Texture2D
 
 # The texture for the notepad button
-var inventory_texture_notepad: Texture
+var inventory_texture_notepad: Texture2D
 
 # The texture for the hot spots reveal button (on touch devices)
-var inventory_texture_reveal: Texture
+var inventory_texture_reveal: Texture2D
 
 # The texture for the left arrow of the inventory bar
-var inventory_texture_left_arrow: Texture
+var inventory_texture_left_arrow: Texture2D
 
 # The texture for the right arrow of the inventory bar
-var inventory_texture_right_arrow: Texture
+var inventory_texture_right_arrow: Texture2D
 
 # The path to the hints csv file
 var notepad_hints_file: String
 
 # The texture in the notepad screen
-var notepad_background: Texture
+var notepad_background: Texture2D
 
 # The notepad goals label rect
 var notepad_goals_rect: Rect2
@@ -104,7 +122,7 @@ var notepad_goals_rect: Rect2
 var notepad_hints_rect: Rect2
 
 # The flashing map image
-var tools_map_image: Texture
+var tools_map_image: Texture2D
 
 # The sound to play when flashing the map
 var tools_map_sound: AudioStream
@@ -133,13 +151,22 @@ var cache_scene_count: int = 2
 var cache_maximum_size_megabyte: int = 50
 
 # A list of scenes (as path to the scene files) that are always cached
-var cache_permanent: PoolStringArray = []
+var cache_permanent: PackedStringArray = []
 
 # The minimum time to show the loading indicator when precaching
 var cache_minimum_wait_seconds: int = 4
 
 # Whether the minimum wait time can be skipped by left clicking
 var cache_minimum_wait_skippable: bool = false
+
+# Display scene path name in game (only in debug build)
+var debug_display_scene_path: bool = false
+
+# Horizontal alignment of debug message
+var debug_message_align_horizontal: int = 2
+
+# Vertical alignment of debug message
+var debug_message_align_vertical: int = 2
 
 
 # Build the property list
@@ -161,7 +188,7 @@ func _get_property_list():
 		name = "design_logo",
 		type = TYPE_OBJECT,
 		hint = PROPERTY_HINT_RESOURCE_TYPE,
-		hint_string = "Texture"
+		hint_string = "Texture2D"
 	})
 	properties.append({
 		name = "design_cursors",
@@ -179,7 +206,7 @@ func _get_property_list():
 		name = "menu_background",
 		type = TYPE_OBJECT,
 		hint = PROPERTY_HINT_RESOURCE_TYPE,
-		hint_string = "Texture"
+		hint_string = "Texture2D"
 	})
 	properties.append({
 		name = "menu_music",
@@ -222,6 +249,30 @@ func _get_property_list():
 		type = TYPE_STRING
 	})
 	properties.append({
+		name = "menu_message_load",
+		type = TYPE_STRING
+	})	
+	properties.append({
+		name = "menu_message_save",
+		type = TYPE_STRING
+	})
+	properties.append({
+		name = "menu_message_align_horizontal",
+		type = TYPE_INT,
+		hint = PROPERTY_HINT_ENUM,
+		hint_string = "Left,Center,Right"
+	})
+	properties.append({
+		name = "menu_message_align_vertical",
+		type = TYPE_INT,
+		hint = PROPERTY_HINT_ENUM,
+		hint_string = "Top,Center,Bottom"
+	})
+	properties.append({
+		name = "menu_message_duration_seconds",
+		type = TYPE_FLOAT
+	})
+	properties.append({
 		name = "Saveslots",
 		type = TYPE_NIL,
 		hint_string = "menu_saveslots",
@@ -231,19 +282,19 @@ func _get_property_list():
 		name = "menu_saveslots_background",
 		type = TYPE_OBJECT,
 		hint = PROPERTY_HINT_RESOURCE_TYPE,
-		hint_string = "Texture"
+		hint_string = "Texture2D"
 	})
 	properties.append({
 		name = "menu_saveslots_previous_image",
 		type = TYPE_OBJECT,
 		hint = PROPERTY_HINT_RESOURCE_TYPE,
-		hint_string = "Texture"
+		hint_string = "Texture2D"
 	})
 	properties.append({
 		name = "menu_saveslots_next_image",
 		type = TYPE_OBJECT,
 		hint = PROPERTY_HINT_RESOURCE_TYPE,
-		hint_string = "Texture"
+		hint_string = "Texture2D"
 	})
 	properties.append({
 		name = "menu_saveslots_empty_color",
@@ -252,6 +303,12 @@ func _get_property_list():
 	properties.append({
 		name = "menu_saveslots_free_text",
 		type = TYPE_STRING
+	})
+	properties.append({
+		name = "menu_saveslots_page_label_alignment",
+		type = TYPE_INT,
+		hint = PROPERTY_HINT_ENUM,
+		hint_string = "Left,Center,Right"
 	})
 	properties.append({
 		name = "Inventory",
@@ -267,31 +324,31 @@ func _get_property_list():
 		"name": "inventory_texture_menu",
 		"type": TYPE_OBJECT,
 		"hint": PROPERTY_HINT_RESOURCE_TYPE,
-		"hint_string": "Texture"
+		"hint_string": "Texture2D"
 	})
 	properties.append({
 		"name": "inventory_texture_notepad",
 		"type": TYPE_OBJECT,
 		"hint": PROPERTY_HINT_RESOURCE_TYPE,
-		"hint_string": "Texture"
+		"hint_string": "Texture2D"
 	})
 	properties.append({
 		"name": "inventory_texture_reveal",
 		"type": TYPE_OBJECT,
 		"hint": PROPERTY_HINT_RESOURCE_TYPE,
-		"hint_string": "Texture"
+		"hint_string": "Texture2D"
 	})
 	properties.append({
 		"name": "inventory_texture_left_arrow",
 		"type": TYPE_OBJECT,
 		"hint": PROPERTY_HINT_RESOURCE_TYPE,
-		"hint_string": "Texture"
+		"hint_string": "Texture2D"
 	})
 	properties.append({
 		"name": "inventory_texture_right_arrow",
 		"type": TYPE_OBJECT,
 		"hint": PROPERTY_HINT_RESOURCE_TYPE,
-		"hint_string": "Texture"
+		"hint_string": "Texture2D"
 	})
 	properties.append({
 		name = "Options",
@@ -303,7 +360,7 @@ func _get_property_list():
 		name = "menu_options_background",
 		type = TYPE_OBJECT,
 		hint = PROPERTY_HINT_RESOURCE_TYPE,
-		hint_string = "Texture"
+		hint_string = "Texture2D"
 	})
 	properties.append({
 		name = "menu_options_speech_sample",
@@ -345,7 +402,7 @@ func _get_property_list():
 		name = "notepad_background",
 		type = TYPE_OBJECT,
 		hint = PROPERTY_HINT_RESOURCE_TYPE,
-		hint_string = "Texture"
+		hint_string = "Texture2D"
 	})
 	properties.append({
 		name = "notepad_goals_rect",
@@ -365,7 +422,7 @@ func _get_property_list():
 		name = "tools_map_image",
 		type = TYPE_OBJECT,
 		hint = PROPERTY_HINT_RESOURCE_TYPE,
-		hint_string = "Texture"
+		hint_string = "Texture2D"
 	})
 	properties.append({
 		name = "tools_map_sound",
@@ -375,19 +432,19 @@ func _get_property_list():
 	})
 	properties.append({
 		name = "tools_navigation_width",
-		type = TYPE_REAL
+		type = TYPE_FLOAT
 	})
 	properties.append({
 		name = "tools_dialog_stretch_ratio",
-		type = TYPE_REAL
+		type = TYPE_FLOAT
 	})
 	properties.append({
 		name = "tools_music_fader_seconds",
-		type = TYPE_REAL
+		type = TYPE_FLOAT
 	})
 	properties.append({
 		name = "tools_background_fader_seconds",
-		type = TYPE_REAL
+		type = TYPE_FLOAT
 	})
 	properties.append({
 		name = "Cache",
@@ -410,7 +467,7 @@ func _get_property_list():
 	})
 	properties.append({
 		name = "cache_permanent",
-		type = TYPE_STRING_ARRAY,
+		type = TYPE_PACKED_STRING_ARRAY,
 	})
 	properties.append({
 		name = "cache_minimum_wait_seconds",
@@ -419,5 +476,27 @@ func _get_property_list():
 	properties.append({
 		name = "cache_minimum_wait_skippable",
 		type = TYPE_BOOL,
+	})
+	properties.append({
+		name = "Debug",
+		type = TYPE_NIL,
+		hint_string = "debug_",
+		usage = PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SCRIPT_VARIABLE
+	})
+	properties.append({
+		name = "debug_display_scene_path",
+		type = TYPE_BOOL,
+	})
+	properties.append({
+		name = "debug_message_align_horizontal",
+		type = TYPE_INT,
+		hint = PROPERTY_HINT_ENUM,
+		hint_string = "Left,Center,Right"
+	})
+	properties.append({
+		name = "debug_message_align_vertical",
+		type = TYPE_INT,
+		hint = PROPERTY_HINT_ENUM,
+		hint_string = "Top,Center,Bottom"
 	})
 	return properties

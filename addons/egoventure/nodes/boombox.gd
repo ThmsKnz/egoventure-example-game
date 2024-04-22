@@ -15,7 +15,7 @@ signal effect_finished
 
 # Let Boombox ignore game pausing. So all sound will continue
 # playing when a game is paused
-var ignore_pause: bool setget _set_ignore_pause
+var ignore_pause: bool: set = _set_ignore_pause
 
 
 # The fader used for fading music
@@ -34,35 +34,28 @@ var _background_queue: Array = []
 # for the tween to finish
 var _music_is_stopping: bool = false
 
+# enum for Music or Background fader 
+enum {FADER_MUSIC, FADER_BACKGROUND}
+
 
 # The active music player
-onready var active_music: AudioStreamPlayer = $Music1
+@onready var active_music: AudioStreamPlayer = $Music1
 
 # The active background player
-onready var active_background: AudioStreamPlayer = $Background1
+@onready var active_background: AudioStreamPlayer = $Background1
 
 
-# Create the tween nodes
+# Create the tweens
 func _ready():
-	_music_fader = Tween.new()
-	_music_fader.connect(
-		"tween_all_completed", 
-		self, 
-		"_handle_music_tween_completed"
-	)
-	add_child(_music_fader)
-	_background_fader = Tween.new()
-	_background_fader.connect(
-		"tween_all_completed",
-		self,
-		"_handle_background_tween_completed"
-	)
-	add_child(_background_fader)
+	_music_fader = create_tween()
+	_music_fader.stop()
+	_background_fader = create_tween()
+	_background_fader.stop()
 
 
 # Check the queues and start the fades
 func _process(_delta):
-	if _music_queue.size() > 0 and not _music_fader.is_active():
+	if _music_queue.size() > 0 and not _music_fader.is_running():
 		if not active_music.playing:
 			var target = _music_queue.pop_front()
 			active_music.stream = target.music
@@ -72,16 +65,16 @@ func _process(_delta):
 			if active_music == $Music2:
 				fade_to = $Music1
 			var target = _music_queue.pop_front()
-			_fade(
+			_music_fader = _fade(
 				active_music, 
 				fade_to, 
 				target.music,
 				target.from_position,
 				EgoVenture.configuration.tools_music_fader_seconds,
-				_music_fader
+				FADER_MUSIC
 			)
 	
-	if _background_queue.size() > 0 and not _background_fader.is_active():
+	if _background_queue.size() > 0 and not _background_fader.is_running():
 		if not active_background.playing:
 			var target = _background_queue.pop_front()
 			active_background.stream = target.background
@@ -91,13 +84,13 @@ func _process(_delta):
 			if active_background == $Background2:
 				fade_to = $Background1
 			var target = _background_queue.pop_front()
-			_fade(
+			_background_fader = _fade(
 				active_background,
 				fade_to,
 				target.background,
 				target.from_position,
 				EgoVenture.configuration.tools_background_fader_seconds,
-				_background_fader
+				FADER_BACKGROUND
 			)
 
 
@@ -112,8 +105,8 @@ func reset():
 	$Background2.stop()
 	if active_background != $Background1:
 		active_background = $Background1
-	_music_fader.reset_all()
-	_background_fader.reset_all()
+	#_music_fader.reset_all()
+	#_background_fader.reset_all()
 	$Effects.stop()
 	_reset_background_volume()
 	_reset_music_volume()
@@ -149,7 +142,8 @@ func resume_music():
 # Stop the currently playing music
 func stop_music():
 	_music_is_stopping = true
-	_music_fader.stop_all()
+	if _music_fader:
+		_music_fader.stop()
 	_music_queue = []
 	$Music1.stop()
 	$Music2.stop()
@@ -159,7 +153,7 @@ func stop_music():
 
 # Get the current music
 func get_music() -> AudioStream:
-	if _music_fader.is_active():
+	if _music_fader.is_running():
 		if active_music == $Music1:
 			return $Music2.stream
 		else:
@@ -201,7 +195,8 @@ func resume_background():
 
 # Stop playing a background effect
 func stop_background():
-	_background_fader.stop_all()
+	if _background_fader:
+		_background_fader.stop()
 	_background_queue = []
 	$Background1.stop()
 	$Background2.stop()
@@ -212,7 +207,7 @@ func stop_background():
 
 # Get the current background
 func get_background() -> AudioStream:
-	if _background_fader.is_active():
+	if _background_fader.is_running():
 		if active_background == $Background1:
 			return $Background2.stream
 		else:
@@ -258,23 +253,27 @@ func stop_effect():
 func _set_ignore_pause(value: bool):
 	ignore_pause = value
 	if ignore_pause:
-		pause_mode = Node.PAUSE_MODE_PROCESS
-		$Music1.pause_mode = Node.PAUSE_MODE_PROCESS
-		$Music2.pause_mode = Node.PAUSE_MODE_PROCESS
-		$Background1.pause_mode = Node.PAUSE_MODE_PROCESS
-		$Background2.pause_mode = Node.PAUSE_MODE_PROCESS
-		$Effects.pause_mode = Node.PAUSE_MODE_PROCESS
-		_background_fader.pause_mode = Node.PAUSE_MODE_PROCESS
-		_music_fader.pause_mode = Node.PAUSE_MODE_PROCESS
+		process_mode = Node.PROCESS_MODE_ALWAYS
+		$Music1.process_mode = Node.PROCESS_MODE_ALWAYS
+		$Music2.process_mode = Node.PROCESS_MODE_ALWAYS
+		$Background1.process_mode = Node.PROCESS_MODE_ALWAYS
+		$Background2.process_mode = Node.PROCESS_MODE_ALWAYS
+		$Effects.process_mode = Node.PROCESS_MODE_ALWAYS
+		if _background_fader:
+			_background_fader.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+		if _music_fader:
+			_music_fader.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	else:
-		pause_mode = Node.PAUSE_MODE_STOP
-		$Music1.pause_mode = Node.PAUSE_MODE_STOP
-		$Music2.pause_mode = Node.PAUSE_MODE_STOP
-		$Background1.pause_mode = Node.PAUSE_MODE_STOP
-		$Background2.pause_mode = Node.PAUSE_MODE_STOP
-		$Effects.pause_mode = Node.PAUSE_MODE_STOP
-		_background_fader.pause_mode = Node.PAUSE_MODE_STOP
-		_music_fader.pause_mode = Node.PAUSE_MODE_STOP
+		process_mode = Node.PROCESS_MODE_PAUSABLE
+		$Music1.process_mode = Node.PROCESS_MODE_PAUSABLE
+		$Music2.process_mode = Node.PROCESS_MODE_PAUSABLE
+		$Background1.process_mode = Node.PROCESS_MODE_PAUSABLE
+		$Background2.process_mode = Node.PROCESS_MODE_PAUSABLE
+		$Effects.process_mode = Node.PROCESS_MODE_PAUSABLE
+		if _background_fader:
+			_background_fader.set_pause_mode(Tween.TWEEN_PAUSE_STOP)
+		if _music_fader:
+			_music_fader.set_pause_mode(Tween.TWEEN_PAUSE_STOP)
 
 
 # Emit effect_finished signal
@@ -290,38 +289,51 @@ func _on_Effects_finished():
 # - fade_to: Fade to this channel
 # - stream: Stream to play on the fade_to channel
 # - time: Time to take to fade
-# - fader: Tween node to fade with
+# - type: music or background fader
+#
+# #### Returns
+#
+# - Tween
 func _fade(
 	fade_from: Node, 
 	fade_to: Node, 
 	stream: AudioStream, 
 	from_position: float,
 	time: float, 
-	fader: Tween
-):
+	type: int
+) -> Tween:
+	
 	fade_to.stream = stream
 	fade_to.play(from_position)
 	
-	fader.interpolate_property(
+	var fader = create_tween()
+	if type == FADER_MUSIC:
+		fader.connect(
+			"finished", self._handle_music_tween_completed
+		)
+	elif type == FADER_BACKGROUND:
+		fader.connect(
+			"finished", self._handle_background_tween_completed
+		)
+	
+	fader.tween_property(
 		fade_from,
 		"volume_db",
-		VOLUME_MAX,
 		VOLUME_MIN,
-		time,
-		Tween.TRANS_EXPO,
-		Tween.EASE_IN
-	)
-	fader.interpolate_property(
+		time
+	).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_EXPO)
+	
+	fader.tween_property(
 		fade_to,
 		"volume_db",
-		VOLUME_MIN,
 		VOLUME_MAX,
-		time,
-		Tween.TRANS_EXPO,
-		Tween.EASE_OUT
-	)
-	fader.start()
+		time
+	).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_EXPO)
 	
+	fader.play()
+	
+	return fader
+
 
 # Reset the music volume
 func _reset_music_volume():	

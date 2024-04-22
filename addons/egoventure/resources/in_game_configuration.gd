@@ -53,15 +53,15 @@ func _get_property_list():
 	})
 	properties.append({
 		"name": "speech_db",
-		"type": TYPE_REAL
+		"type": TYPE_FLOAT
 	})
 	properties.append({
 		"name": "music_db",
-		"type": TYPE_REAL
+		"type": TYPE_FLOAT
 	})
 	properties.append({
 		"name": "effects_db",
-		"type": TYPE_REAL
+		"type": TYPE_FLOAT
 	})
 	properties.append({
 		"name": "continue_state",

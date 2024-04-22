@@ -6,7 +6,7 @@ var _active: bool
 
 func _ready():
 	# continue processing also if game is paused
-	CheckCursor.pause_mode = Node.PAUSE_MODE_PROCESS
+	CheckCursor.process_mode = Node.PROCESS_MODE_ALWAYS
 	_active = true
 	
 	
@@ -19,20 +19,22 @@ func deactivate():
 
 
 func _process(_delta):
-	if _active and Inventory.selected_item == null:
+	if _active and Inventory.selected_item == null and get_tree().get_current_scene() != null:
 		var mousePos = get_viewport().get_mouse_position()
 		var target_shape = Input.CURSOR_ARROW
 		var layer_processed = false
 		var keep_cursor = false
-
-		for layer in [
+		
+		var layers = [
 				"/root/WaitingScreen", # layer 126
 				"/root/MainMenu", # layer 125
 				"/root/DetailView", # layer 90
 				"/root/Notepad", # layer 2
 				"/root/Inventory/Canvas/InventoryAnchor", # layer 1
 				get_tree().get_current_scene().get_path() # layer 0
-		]:
+		]
+		
+		for layer in layers:
 			if !layer_processed:
 				for child in _get_all_visible_children(get_node(layer)):
 					if (
@@ -40,7 +42,7 @@ func _process(_delta):
 							and child.visible
 							and child.is_class("Control")
 					):
-						if Rect2(Vector2(), child.rect_size).has_point(child.get_local_mouse_position()):
+						if Rect2(Vector2(), child.size).has_point(child.get_local_mouse_position()):
 							layer_processed = true
 							if child.get_class() == "TriggerHotspot":
 								child.on_mouse_entered()
