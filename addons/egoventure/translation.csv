@@ -6,6 +6,7 @@ MENU_LOAD;Load;Laden
 MENU_SAVE;Save;Speichern
 MENU_OPTIONS;Options;Optionen
 MENU_QUIT;Quit;Beenden
+MENU_PAGE;Page;Seite
 SAVESLOTS_TITLE;Load/Save Game;Spiel laden/speichern
 OPTIONS_SPEECH;Speech;Sprachausgabe
 OPTIONS_MUSIC;Music;Musik
@@ -21,3 +22,5 @@ DATEFORMAT;{month}/{day}/{year} {hour}:{minute};{day}.{month}.{year} {hour}:{min
 DIALOG_QUIT;Do you really want to quit the game?;Willst Du das Spiel wirklich beenden?
 DIALOG_OVERWRITE;Are you sure you want to overwrite a saved game?;Willst Du das Spiel wirklich überschreiben?
 DIALOG_RESTART;You will lose all progress when starting a new game. Do you really want to restart?;Beim Neustart verlierst Du Deinen Spielfortschritt. Willst Du wirklich neu starten?
+MESSAGE_LOAD;Game loaded;Spiel geladen
+MESSAGE_SAVE;Game saved;Spiel gespeichert

@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=34 format=2]
+[gd_resource type="Theme" load_steps=38 format=2]
 
 [ext_resource path="res://images/misc/stripes_sized.png" type="Texture" id=1]
 [ext_resource path="res://misc/fonts/KALAM-REGULAR.TTF" type="DynamicFontData" id=2]
@@ -50,6 +50,12 @@ content_margin_bottom = 10.0
 texture = ExtResource( 1 )
 region_rect = Rect2( 0, 0, 485, 69 )
 
+[sub_resource type="DynamicFont" id=32]
+size = 32
+outline_size = 2
+outline_color = Color( 0, 0, 0, 1 )
+font_data = ExtResource( 2 )
+
 [sub_resource type="DynamicFont" id=13]
 size = 72
 outline_size = 2
@@ -67,6 +73,13 @@ size = 50
 use_filter = true
 font_data = ExtResource( 2 )
 
+[sub_resource type="DynamicFont" id=30]
+size = 72
+outline_size = 2
+outline_color = Color( 0, 0, 0, 1 )
+use_filter = true
+font_data = ExtResource( 2 )
+
 [sub_resource type="DynamicFont" id=16]
 size = 34
 outline_size = 2
@@ -76,11 +89,20 @@ extra_spacing_top = 10
 extra_spacing_bottom = 10
 font_data = ExtResource( 2 )
 
+[sub_resource type="DynamicFont" id=29]
+size = 34
+outline_size = 2
+outline_color = Color( 0, 0, 0, 1 )
+use_filter = true
+font_data = ExtResource( 2 )
+
 [sub_resource type="StyleBoxFlat" id=17]
 bg_color = Color( 0, 0, 0, 1 )
 
 [sub_resource type="StyleBoxFlat" id=28]
 bg_color = Color( 0, 0, 0, 0.639216 )
+
+[sub_resource type="StyleBoxEmpty" id=31]
 
 [sub_resource type="StyleBoxFlat" id=18]
 bg_color = Color( 0, 0, 0, 1 )
@@ -154,18 +176,24 @@ HSlider/icons/tick = SubResource( 9 )
 HSlider/styles/grabber_area = SubResource( 10 )
 HSlider/styles/grabber_area_highlight = SubResource( 11 )
 HSlider/styles/slider = SubResource( 12 )
+Label/colors/debug_message_font_color = Color( 0.627451, 0.627451, 0.627451, 1 )
 Label/colors/detail_view_font_color = Color( 1, 1, 1, 1 )
 Label/colors/font_color = Color( 1, 1, 1, 1 )
 Label/colors/goals = Color( 0, 0, 0, 1 )
 Label/colors/hints = Color( 0, 0, 0, 1 )
+Label/colors/message_screen_font_color = Color( 1, 1, 1, 1 )
+Label/fonts/debug_message = SubResource( 32 )
 Label/fonts/detail_view = SubResource( 13 )
 Label/fonts/goals = SubResource( 14 )
 Label/fonts/hints = SubResource( 15 )
+Label/fonts/message_screen = SubResource( 30 )
 Label/fonts/saveslots_date = SubResource( 16 )
+Label/fonts/saveslots_page = SubResource( 29 )
 Panel/styles/detail_view = null
 Panel/styles/dialog_panel = null
 Panel/styles/inventory_panel = SubResource( 17 )
 Panel/styles/inventory_panel_touch = SubResource( 28 )
+Panel/styles/message_screen = SubResource( 31 )
 Panel/styles/notepad_panel = SubResource( 18 )
 Panel/styles/saveslot_panel = SubResource( 19 )
 ProgressBar/styles/bg = SubResource( 20 )

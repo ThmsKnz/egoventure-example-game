@@ -19,7 +19,10 @@ func deactivate():
 
 
 func _process(_delta):
-	if _active and Inventory.selected_item == null:
+	# Cursor shape is not changed when check cursor feature has been deactivated
+	# or when the cursor shape is an inventory item
+	# or when the left mouse button is being pressed
+	if _active and Inventory.selected_item == null and !Input.is_mouse_button_pressed(BUTTON_LEFT):
 		var mousePos = get_viewport().get_mouse_position()
 		var target_shape = Input.CURSOR_ARROW
 		var layer_processed = false
