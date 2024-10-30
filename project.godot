@@ -196,6 +196,7 @@ default_bus_layout="res://addons/egoventure/default_bus_layout.tres"
 
 Core="*res://core.gd"
 WaitingScreen="*res://addons/egoventure/nodes/waiting_screen.tscn"
+MessageScreen="*res://addons/egoventure/nodes/message_screen.tscn"
 Cursors="*res://addons/egoventure/types/cursors.gd"
 Speedy="*res://addons/speedy_gonzales/nodes/speedy.tscn"
 MenuGrab="*res://addons/egoventure/nodes/menu_grab.tscn"

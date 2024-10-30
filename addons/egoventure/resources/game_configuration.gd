@@ -46,6 +46,9 @@ var menu_saveslots_empty_color: Color = Color(0, 0, 0, 0.55)
 # The text shown under the free save slot
 var menu_saveslots_free_text: String = "SAVESLOTS_FREE"
 
+# Orientation of save slot page indicator
+var menu_saveslots_page_label_alignment: int = 0
+
 # The background of the options menu
 var menu_options_background: Texture
 
@@ -72,6 +75,21 @@ var menu_overwrite_confirmation: String = "DIALOG_OVERWRITE"
 
 # The confirmation text for the restart confirmation prompt
 var menu_restart_confirmation: String = "DIALOG_RESTART"
+
+# Notification message when game has been loaded
+var menu_message_load: String = ""
+
+# Notification message when game has been saved
+var menu_message_save: String = "MESSAGE_SAVE"
+
+# Horizontal alignment of message
+var menu_message_align_horizontal: int = 1
+
+# Vertical alignment of message
+var menu_message_align_vertical: int = 2
+
+# Duration of message display in seconds
+var menu_message_duration_seconds: float = 1.0
 
 # The vertical size of the inventory bar
 var inventory_size: int = 92
@@ -140,6 +158,15 @@ var cache_minimum_wait_seconds: int = 4
 
 # Whether the minimum wait time can be skipped by left clicking
 var cache_minimum_wait_skippable: bool = false
+
+# Display scene path name in game (only in debug build)
+var debug_display_scene_path: bool = false
+
+# Horizontal alignment of debug message
+var debug_message_align_horizontal: int = 2
+
+# Vertical alignment of debug message
+var debug_message_align_vertical: int = 2
 
 
 # Build the property list
@@ -222,6 +249,30 @@ func _get_property_list():
 		type = TYPE_STRING
 	})
 	properties.append({
+		name = "menu_message_load",
+		type = TYPE_STRING
+	})	
+	properties.append({
+		name = "menu_message_save",
+		type = TYPE_STRING
+	})
+	properties.append({
+		name = "menu_message_align_horizontal",
+		type = TYPE_INT,
+		hint = PROPERTY_HINT_ENUM,
+		hint_string = "Left,Center,Right"
+	})
+	properties.append({
+		name = "menu_message_align_vertical",
+		type = TYPE_INT,
+		hint = PROPERTY_HINT_ENUM,
+		hint_string = "Top,Center,Bottom"
+	})
+	properties.append({
+		name = "menu_message_duration_seconds",
+		type = TYPE_REAL
+	})
+	properties.append({
 		name = "Saveslots",
 		type = TYPE_NIL,
 		hint_string = "menu_saveslots",
@@ -252,6 +303,12 @@ func _get_property_list():
 	properties.append({
 		name = "menu_saveslots_free_text",
 		type = TYPE_STRING
+	})
+	properties.append({
+		name = "menu_saveslots_page_label_alignment",
+		type = TYPE_INT,
+		hint = PROPERTY_HINT_ENUM,
+		hint_string = "Left,Center,Right"
 	})
 	properties.append({
 		name = "Inventory",
@@ -419,5 +476,27 @@ func _get_property_list():
 	properties.append({
 		name = "cache_minimum_wait_skippable",
 		type = TYPE_BOOL,
+	})
+	properties.append({
+		name = "Debug",
+		type = TYPE_NIL,
+		hint_string = "debug_",
+		usage = PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SCRIPT_VARIABLE
+	})
+	properties.append({
+		name = "debug_display_scene_path",
+		type = TYPE_BOOL,
+	})
+	properties.append({
+		name = "debug_message_align_horizontal",
+		type = TYPE_INT,
+		hint = PROPERTY_HINT_ENUM,
+		hint_string = "Left,Center,Right"
+	})
+	properties.append({
+		name = "debug_message_align_vertical",
+		type = TYPE_INT,
+		hint = PROPERTY_HINT_ENUM,
+		hint_string = "Top,Center,Bottom"
 	})
 	return properties

@@ -148,20 +148,30 @@ func _notification(what):
 # ** Arguments **
 #
 # - path: The absolute path to the new scene
-func change_scene(path: String):
+# - load_game_mode: true when the scene of a savegame is loaded, default is false
+func change_scene(path: String, load_game_mode: bool = false):
+	if path == current_scene and !load_game_mode:
+		# no change of scene required
+		return
+	
+	print("Changing to %s" % path)
 	if path != current_scene:
-		print("Changing to %s" % path)
 		current_scene = path
 		get_tree().change_scene_to(_scene_cache.get_scene(path))
-		yield(get_tree(),"idle_frame")
-		var is_multi_side_room = false
-		for child in get_tree().current_scene.get_children():
-			if child.filename in \
-					["res://addons/egoventure/nodes/four_side_room.tscn",
-					"res://addons/egoventure/nodes/eight_side_room.tscn"]:
-				is_multi_side_room = true
-		# update cache when scene is changed
-		update_cache(path)
+	else:
+		# reload current scene when a savegame gets loaded
+		get_tree().reload_current_scene()
+	
+	yield(get_tree(),"idle_frame")
+	var is_multi_side_room = false
+	for child in get_tree().current_scene.get_children():
+		if child.filename in \
+				["res://addons/egoventure/nodes/four_side_room.tscn",
+				"res://addons/egoventure/nodes/eight_side_room.tscn"]:
+			is_multi_side_room = true
+	# update cache when scene is changed
+	update_cache(path)
+
 
 # Set whether dialog line skipping is enabled in parrot
 #
@@ -461,10 +471,7 @@ func _load(p_state: BaseState):
 	if cached_items > 0:
 		yield(self, "queue_complete")
 	
-	if EgoVenture.state.current_scene == current_scene:
-		emit_signal("requested_view_change", EgoVenture.state.target_view)
-	else:
-		change_scene(EgoVenture.state.current_scene)
+	change_scene(EgoVenture.state.current_scene, true)
 	
 	if EgoVenture.state.current_music != "":
 		Boombox.play_music(load(EgoVenture.state.current_music))

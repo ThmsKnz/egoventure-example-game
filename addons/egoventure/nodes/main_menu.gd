@@ -10,9 +10,6 @@ signal new_game
 signal quit_game
 
 
-# Lowest Audio level
-const AUDIO_MIN: float = -60.0
-
 # Minimum number of seconds a speech or background sample should
 # be played
 const MINIMUM_SAMPLE_TIME: float = 2.0
@@ -171,6 +168,17 @@ func configure(configuration: GameConfiguration):
 		$Menu/Options/CenterContainer/VBox/Grid/LocaleLabel.hide()
 		$Menu/Options/CenterContainer/VBox/Grid/Locales.hide()
 	
+	# Set alignment of save slot page label
+	$Menu/SaveSlots/VBox/HBox/VBox/Page.align = EgoVenture.configuration.\
+			menu_saveslots_page_label_alignment
+	$Menu/SaveSlots/VBox/HBox/VBox/Page.add_font_override(
+			"font",
+			$Menu/SaveSlots/VBox/HBox/VBox/Page.get_font(
+				"saveslots_page",
+				"Label"
+			)
+	)
+	
 	# set save slot page to slot last modified
 	_save_slot_page = _get_save_slot_page_last_modified()
 
@@ -237,6 +245,7 @@ func _on_Resume_pressed():
 	if disabled:
 		disabled = false
 	toggle()
+	$Menu/MainMenu/Margin/VBox/MenuItems/Resume.emit_signal("mouse_exited")
 
 
 # Quit was pressed. Show confirmation
@@ -291,7 +300,7 @@ func _on_slot_selected(slot: int, exists: bool):
 			# Briefly hide the menu to snapshot a picture of the current
 			# scene
 			toggle()
-			Speedy.hidden = true
+			EgoVenture.interactive = false
 			yield(VisualServer, "frame_post_draw")
 			var screenshot = get_viewport().get_texture().get_data()
 			var screenshot_size = get_viewport().get_visible_rect().size * .5
@@ -299,12 +308,15 @@ func _on_slot_selected(slot: int, exists: bool):
 			screenshot.flip_y()
 			screenshot.save_png("user://save_%d.png" % slot)
 			yield(VisualServer, "frame_post_draw")
-			Speedy.hidden = false
+			MessageScreen.show_message(EgoVenture.configuration.menu_message_save)
+			EgoVenture.interactive = true
 			EgoVenture.save(slot)
 	else:
 		if disabled:
 			disabled = false
 		EgoVenture.load(slot)
+		yield(EgoVenture,"game_loaded")
+		MessageScreen.show_message(EgoVenture.configuration.menu_message_load)
 
 
 # Overwrite was confirmed, just call the event handler again ignoring
@@ -396,14 +408,14 @@ func _on_Subtitles_toggled(value: bool):
 # - bus_name: The name of the bus
 #
 # ** Returns **
-# - The slider percent from 0 (- AUDIO_MIN db) to 100 (0 db)
+# - The slider percent from 0 (-infinity db) to 100 (0 db)
 func _get_bus_percent(bus_name: String) -> float:
 	var db = AudioServer.get_bus_volume_db(AudioServer.get_bus_index(bus_name))
-	return ((db + (AUDIO_MIN * -1)) * 100 / AUDIO_MIN) * -1
+	return db2linear(db) * 100
 
 
 # Convert a slider percent level to db for an audiobus.
-# 0 percent = -72db, 100 percent = 0 db
+# 0 percent = -infinity db, 100 percent = 0 db
 #
 # ** Arguments **
 # - percent: The percent value
@@ -411,7 +423,7 @@ func _get_bus_percent(bus_name: String) -> float:
 # ** Returns **
 # - The volume value in db
 func _percent_to_db(percent: float) -> float:
-	return ((AUDIO_MIN * -1) * percent / 100) + AUDIO_MIN
+	return linear2db(percent / 100)
 
 
 # Get the last modified timestamp in a readable date format for the
@@ -473,11 +485,13 @@ func _refresh_saveslots():
 		$Menu/SaveSlots/VBox/HBox/Previous.modulate = Color(1, 1, 1, 1)
 		$Menu/SaveSlots/VBox/HBox/Previous.mouse_default_cursor_shape = Control.CURSOR_FDIAGSIZE
 	
+	$Menu/SaveSlots/VBox/HBox/VBox/Page.text = tr("MENU_PAGE") + " %s" % _save_slot_page
+	
 	for slot in range(0, 12):
 		var save_slot = ((_save_slot_page - 1) * 12) + slot
 		
 		# Set the slot stylebox
-		var slot_node = $Menu/SaveSlots/VBox/HBox/Slots.get_node(
+		var slot_node = $Menu/SaveSlots/VBox/HBox/VBox/Slots.get_node(
 			"Slot%d" % (slot + 1)
 		)
 		(slot_node.get_node("Slot/Panel") as Panel) \
@@ -578,7 +592,7 @@ func _on_Continue_pressed():
 
 # The New Game button was pressed
 func _on_NewGame_pressed():
-	if EgoVenture.has_continue_state():
+	if EgoVenture.has_continue_state() or EgoVenture.game_started:
 		$Menu/RestartConfirm.popup_centered()
 		$Menu/RestartConfirm.get_ok().release_focus()
 	else:
@@ -650,3 +664,12 @@ func _on_locale_changed(locale: String):
 	EgoVenture.in_game_configuration.locale = locale
 	EgoVenture.save_in_game_configuration()
 	TranslationServer.set_locale(locale)
+
+
+# Returns true if the main menu is shown and no pop-ups are shown
+func main_menu_is_displayed():
+	return ($Menu.visible 
+		and not $Menu/Options.visible
+		and not $Menu/SaveSlots.visible
+		and not $Menu/QuitConfirm.visible
+		and not $Menu/RestartConfirm.visible)
