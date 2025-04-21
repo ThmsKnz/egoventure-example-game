@@ -536,3 +536,35 @@ func _set_interactive(value: bool):
 		Boombox.ignore_pause = true
 		Parrot.ignore_pause = true
 		get_tree().paused = true
+
+
+# Pauses the game for a given duration
+# Can be called from scripts with
+# 'yield(EgoVenture.pause(<duration>, <hide_mouse>), "completed")'
+#
+# ** Arguments **
+#
+# - duration: pause duration in seconds
+# - hide_mouse:
+#     true (default): mouse cursor is hidden during pause
+#     false: mouse cursor is visible during pause (if the cursor is visible when starting the pause)
+func pause(duration: float = 1.0, hide_mouse:bool = true) -> void:
+	var mouse_was_hidden = Speedy.hidden
+	# Hide mouse based on parameter
+	if hide_mouse:
+		Speedy.hidden = true
+	# Pause game in case it wasn't set to non-interactive before
+	if interactive:
+		Boombox.ignore_pause = true
+		Parrot.ignore_pause = true
+		get_tree().paused = true
+	# Wait for duration in seconds	
+	yield(get_tree().create_timer(duration), "timeout")
+	# Show mouse in case it was hidden and visible before the pause
+	if hide_mouse and !mouse_was_hidden:
+		Speedy.hidden = false
+	# Resume game in case it wasn't set to non-interactive before
+	if interactive:
+		Boombox.ignore_pause = false
+		Parrot.ignore_pause = false
+		get_tree().paused = false
